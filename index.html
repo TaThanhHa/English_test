@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Vocabulary Test</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(to right, #74ebd5, #9face6);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #34495e;
+        }
+        h1 {
+            text-align: center;
+            color: #fff;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            font-size: 2.5em;
+        }
+        #progress-bar {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            width: 100%;
+            max-width: 600px;
+        }
+        .bar {
+            height: 20px;
+            border-radius: 5px;
+            margin: 0 2px;
+            flex: 1;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .bar:hover {
+            transform: scale(1.1);
+        }
+        .correct {
+            background-color: #2ecc71;
+        }
+        .wrong {
+            background-color: #e74c3c;
+        }
+        .neutral {
+            background-color: #bdc3c7;
+        }
+        .question {
+            text-align: left;
+            margin: 20px 0;
+            font-size: 1.5em;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 600px;
+        }
+        .answers {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+        .answer-button {
+            padding: 15px;
+            border: none;
+            border-radius: 10px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 1.2em;
+        }
+        .answer-button:hover {
+            background-color: #2980b9;
+            transform: scale(1.05);
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1em;
+            color: #7f8c8d;
+        }
+        .feedback {
+            display: none;
+            padding: 15px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin: 10px 0;
+            font-size: 1.1em;
+            text-align: center;
+        }
+    </style>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
+        import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-mR6w4JjPVp7iTYhdfv98ktb9P7Of1KU",
+            authDomain: "english1-fb14c.firebaseapp.com",
+            databaseURL: "https://english1-fb14c-default-rtdb.firebaseio.com",
+            projectId: "english1-fb14c",
+            storageBucket: "english1-fb14c.appspot.com",
+            messagingSenderId: "276850955441",
+            appId: "1:276850955441:web:b41a8e386f0b4ecf45be90"
+        };
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        let questions = [];
+        let currentQuestionIndex = 0;
+        let correctAnswers = 0;
+        let totalQuestions = 0;
+
+        async function getData() {
+            const dbRef = ref(database, 'data');
+            try {
+                const snapshot = await get(dbRef);
+                if (snapshot.exists()) {
+                    questions = Object.values(snapshot.val()).map(item => ({
+                        english: item.column1,
+                        vietnamese: item.column2
+                    }));
+                    totalQuestions = questions.length;
+                    displayQuestion();
+                    updateProgressBar();
+                } else {
+                    console.log("No data available");
+                }
+            } catch (error) {
+                console.error("Error getting data:", error);
+            }
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex < totalQuestions) {
+                const questionElement = document.getElementById("question");
+                const answersElement = document.getElementById("answers");
+                questionElement.textContent = `Question ${currentQuestionIndex + 1}: What is the Vietnamese translation for "${questions[currentQuestionIndex].english}"?`;
+
+                answersElement.innerHTML = '';
+
+                const correctAnswer = questions[currentQuestionIndex].vietnamese;
+                const wrongAnswers = getRandomWrongAnswers(correctAnswer);
+
+                const allAnswers = [correctAnswer, ...wrongAnswers];
+                allAnswers.sort(() => Math.random() - 0.5);
+
+                allAnswers.forEach(answer => {
+                    const button = document.createElement("button");
+                    button.textContent = answer;
+                    button.className = "answer-button";
+                    button.onclick = () => checkAnswer(answer);
+                    answersElement.appendChild(button);
+                });
+            } else {
+                showResults();
+            }
+        }
+
+        function getRandomWrongAnswers(correctAnswer) {
+            const wrongAnswers = [];
+            while (wrongAnswers.length < 3) {
+                const randomIndex = Math.floor(Math.random() * totalQuestions);
+                const randomAnswer = questions[randomIndex].vietnamese;
+                if (randomAnswer !== correctAnswer && !wrongAnswers.includes(randomAnswer)) {
+                    wrongAnswers.push(randomAnswer);
+                }
+            }
+            return wrongAnswers;
+        }
+
+        function checkAnswer(selectedAnswer) {
+            const correctAnswer = questions[currentQuestionIndex].vietnamese;
+            const feedbackElement = document.getElementById("feedback");
+
+            if (selectedAnswer === correctAnswer) {
+                correctAnswers++;
+                feedbackElement.textContent = `Correct!`;
+                feedbackElement.style.backgroundColor = "#2ecc71"; // Màu xanh lá
+            } else {
+                feedbackElement.textContent = `Wrong! The correct answer is "${correctAnswer}".`;
+                feedbackElement.style.backgroundColor = "#e74c3c"; // Màu đỏ
+            }
+
+            feedbackElement.style.display = "block"; // Hiện phần thông báo
+
+            setTimeout(() => {
+                feedbackElement.style.display = "none"; // Ẩn phần thông báo sau 2 giây
+                currentQuestionIndex++;
+                updateProgressBar();
+                displayQuestion();
+            }, 2000); // 2 giây
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById("progress-bar");
+            progressBar.innerHTML = '';
+            const total = totalQuestions;
+
+            for (let i = 0; i < total; i++) {
+                const barSegment = document.createElement("div");
+                barSegment.className = "bar";
+                if (i < correctAnswers) {
+                    barSegment.classList.add("correct");
+                } else if (i < currentQuestionIndex) {
+                    barSegment.classList.add("wrong");
+                } else {
+                    barSegment.classList.add("neutral");
+                }
+                progressBar.appendChild(barSegment);
+            }
+        }
+
+        function showResults() {
+            const questionElement = document.getElementById("question");
+            const answersElement = document.getElementById("answers");
+            questionElement.textContent = `You answered ${correctAnswers} out of ${totalQuestions} correctly.`;
+            answersElement.innerHTML = '';
+            const retryButton = document.createElement("button");
+            retryButton.textContent = "Retry";
+            retryButton.className = "answer-button";
+            retryButton.onclick = () => location.reload();
+            answersElement.appendChild(retryButton);
+        }
+
+        window.onload = getData;
+    </script>
+</head>
+<body>
+    <h1>English Vocabulary Test</h1>
+    <div id="progress-bar"></div>
+    <div class="feedback" id="feedback"></div>
+    <div class="question" id="question"></div>
+    <div class="answers" id="answers"></div>
+    <div class="footer">
+        <p>© 2024 English Vocabulary Test</p>
+    </div>
+</body>
+</html>
