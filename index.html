@@ -82,6 +82,27 @@
             background-color: #2980b9;
             transform: scale(1.05);
         }
+        #week-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Khoảng cách giữa các nút */
+            align-items: center;
+            margin-top: 20px; /* Thêm khoảng cách bên trên */
+        }
+        #week-selection button {
+            padding: 15px 40px;
+            font-size: 1.2em;
+            background-color: #f39c12;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        #week-selection button:hover {
+            background-color: #e67e22;
+            transform: scale(1.05);
+        }
         .footer {
             text-align: center;
             margin-top: 20px;
@@ -97,6 +118,32 @@
             margin: 10px 0;
             font-size: 1.1em;
             text-align: center;
+        }
+        .action-buttons {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .action-buttons button {
+            padding: 15px 30px;
+            font-size: 1.2em;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        .action-buttons button:hover {
+            background-color: #2ecc71;
+            transform: scale(1.05);
+        }
+        .action-buttons .home-button {
+            background-color: #e74c3c;
+        }
+        .action-buttons .home-button:hover {
+            background-color: #c0392b;
         }
     </style>
     <script type="module">
@@ -119,9 +166,39 @@
         let currentQuestionIndex = 0;
         let correctAnswers = 0;
         let totalQuestions = 0;
+        let currentWeek = '';
 
-        async function getData() {
-            const dbRef = ref(database, 'data');
+        async function getWeeks() {
+            const dbRef = ref(database);
+            try {
+                const snapshot = await get(dbRef);
+                if (snapshot.exists()) {
+                    const weeks = Object.keys(snapshot.val());
+                    displayWeekOptions(weeks);
+                } else {
+                    console.log("No weeks available");
+                }
+            } catch (error) {
+                console.error("Error getting weeks:", error);
+            }
+        }
+
+        function displayWeekOptions(weeks) {
+            const weekSelection = document.getElementById("week-selection");
+            weekSelection.innerHTML = ''; // Clear previous options
+
+            weeks.forEach(week => {
+                const button = document.createElement("button");
+                button.textContent = week;
+                button.className = "answer-button";
+                button.onclick = () => loadWeekData(week);
+                weekSelection.appendChild(button);
+            });
+        }
+
+        async function loadWeekData(week) {
+            currentWeek = week; // Store the current week for "Retry"
+            const dbRef = ref(database, week);
             try {
                 const snapshot = await get(dbRef);
                 if (snapshot.exists()) {
@@ -130,13 +207,19 @@
                         vietnamese: item.column2
                     }));
                     totalQuestions = questions.length;
+                    currentQuestionIndex = 0;
+                    correctAnswers = 0;
+
+                    document.getElementById("week-selection").style.display = "none"; // Hide week selection
+                    document.getElementById("test-container").style.display = "block"; // Show test
+                    document.getElementById("test-title").textContent = `Vocabulary test ${week}`;
                     displayQuestion();
                     updateProgressBar();
                 } else {
-                    console.log("No data available");
+                    console.log("No data available for this week");
                 }
             } catch (error) {
-                console.error("Error getting data:", error);
+                console.error("Error getting week data:", error);
             }
         }
 
@@ -146,19 +229,21 @@
                 const answersElement = document.getElementById("answers");
                 questionElement.textContent = `Question ${currentQuestionIndex + 1}: What is the Vietnamese translation for "${questions[currentQuestionIndex].english}"?`;
 
-                answersElement.innerHTML = '';
+                answersElement.innerHTML = ''; // Clear previous answers
 
+                // Generate random answers
                 const correctAnswer = questions[currentQuestionIndex].vietnamese;
-                const wrongAnswers = getRandomWrongAnswers(correctAnswer);
-
-                const allAnswers = [correctAnswer, ...wrongAnswers];
-                allAnswers.sort(() => Math.random() - 0.5);
+                const wrongAnswers = generateWrongAnswers(correctAnswer);
+                const allAnswers = [...wrongAnswers, correctAnswer].sort(() => Math.random() - 0.5);
 
                 allAnswers.forEach(answer => {
                     const button = document.createElement("button");
                     button.textContent = answer;
                     button.className = "answer-button";
-                    button.onclick = () => checkAnswer(answer);
+                    button.onclick = () => {
+                        checkAnswer(answer);
+                        button.disabled = true; // Disable after clicking
+                    };
                     answersElement.appendChild(button);
                 });
             } else {
@@ -166,13 +251,13 @@
             }
         }
 
-        function getRandomWrongAnswers(correctAnswer) {
+        function generateWrongAnswers(correctAnswer) {
             const wrongAnswers = [];
             while (wrongAnswers.length < 3) {
                 const randomIndex = Math.floor(Math.random() * totalQuestions);
-                const randomAnswer = questions[randomIndex].vietnamese;
-                if (randomAnswer !== correctAnswer && !wrongAnswers.includes(randomAnswer)) {
-                    wrongAnswers.push(randomAnswer);
+                const wrongAnswer = questions[randomIndex].vietnamese;
+                if (wrongAnswer !== correctAnswer && !wrongAnswers.includes(wrongAnswer)) {
+                    wrongAnswers.push(wrongAnswer);
                 }
             }
             return wrongAnswers;
@@ -180,69 +265,89 @@
 
         function checkAnswer(selectedAnswer) {
             const correctAnswer = questions[currentQuestionIndex].vietnamese;
-            const feedbackElement = document.getElementById("feedback");
-
             if (selectedAnswer === correctAnswer) {
                 correctAnswers++;
-                feedbackElement.textContent = `Correct!`;
-                feedbackElement.style.backgroundColor = "#2ecc71"; // Màu xanh lá
-            } else {
-                feedbackElement.textContent = `Wrong! The correct answer is "${correctAnswer}".`;
-                feedbackElement.style.backgroundColor = "#e74c3c"; // Màu đỏ
             }
 
-            feedbackElement.style.display = "block"; // Hiện phần thông báo
+            currentQuestionIndex++;
+            updateProgressBar();
 
-            setTimeout(() => {
-                feedbackElement.style.display = "none"; // Ẩn phần thông báo sau 2 giây
-                currentQuestionIndex++;
-                updateProgressBar();
-                displayQuestion();
-            }, 2000); // 2 giây
+            setTimeout(displayQuestion, 1000); // Delay before moving to next question
         }
 
         function updateProgressBar() {
             const progressBar = document.getElementById("progress-bar");
             progressBar.innerHTML = '';
-            const total = totalQuestions;
 
-            for (let i = 0; i < total; i++) {
-                const barSegment = document.createElement("div");
-                barSegment.className = "bar";
-                if (i < correctAnswers) {
-                    barSegment.classList.add("correct");
-                } else if (i < currentQuestionIndex) {
-                    barSegment.classList.add("wrong");
+            for (let i = 0; i < totalQuestions; i++) {
+                const bar = document.createElement("div");
+                bar.className = 'bar';
+
+                if (i < currentQuestionIndex) {
+                    if (i < correctAnswers) {
+                        bar.classList.add('correct');
+                    } else {
+                        bar.classList.add('wrong');
+                    }
                 } else {
-                    barSegment.classList.add("neutral");
+                    bar.classList.add('neutral');
                 }
-                progressBar.appendChild(barSegment);
+
+                progressBar.appendChild(bar);
             }
         }
 
         function showResults() {
             const questionElement = document.getElementById("question");
             const answersElement = document.getElementById("answers");
-            questionElement.textContent = `You answered ${correctAnswers} out of ${totalQuestions} correctly.`;
+            questionElement.textContent = `You completed the test! You answered ${correctAnswers} out of ${totalQuestions} questions correctly.`;
             answersElement.innerHTML = '';
+
+            const actionButtons = document.createElement("div");
+            actionButtons.className = "action-buttons";
+
             const retryButton = document.createElement("button");
             retryButton.textContent = "Retry";
-            retryButton.className = "answer-button";
-            retryButton.onclick = () => location.reload();
-            answersElement.appendChild(retryButton);
+            
+            retryButton.onclick = async () => {
+                currentQuestionIndex = 0;
+                correctAnswers = 0;
+
+                document.getElementById("test-container").style.display = "none"; // Hide current test
+                await loadWeekData(currentWeek); // Re-load current week data
+                document.getElementById("test-container").style.display = "block"; // Show test again
+            };
+
+            const homeButton = document.createElement("button");
+            homeButton.textContent = "Home";
+            homeButton.className = "home-button";
+            homeButton.onclick = () => {
+                document.getElementById("test-container").style.display = "none";
+                document.getElementById("week-selection").style.display = "block";
+            };
+
+            actionButtons.appendChild(retryButton);
+            actionButtons.appendChild(homeButton);
+            answersElement.appendChild(actionButtons);
         }
 
-        window.onload = getData;
+        window.onload = getWeeks;
     </script>
 </head>
 <body>
     <h1>English Vocabulary Test</h1>
-    <div id="progress-bar"></div>
-    <div class="feedback" id="feedback"></div>
-    <div class="question" id="question"></div>
-    <div class="answers" id="answers"></div>
+    <div id="week-selection">
+        <!-- Week selection buttons will be added here dynamically -->
+    </div>
+    <div id="test-container" style="display: none;">
+        <h2 id="test-title"></h2>
+        <div id="progress-bar"></div>
+        <div id="question" class="question"></div>
+        <div id="answers" class="answers"></div>
+        <div id="feedback" class="feedback"></div>
+    </div>
     <div class="footer">
-        <p>© 2024 English Vocabulary Test</p>
+        &copy; 2024 Vocabulary Test by You
     </div>
 </body>
 </html>
