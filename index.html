@@ -5,147 +5,194 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>English Vocabulary Test</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(to right, #74ebd5, #9face6);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            color: #34495e;
-        }
-        h1 {
-            text-align: center;
-            color: #fff;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-            font-size: 2.5em;
-        }
-        #progress-bar {
-            display: flex;
-            justify-content: center;
-            margin: 20px 0;
-            width: 100%;
-            max-width: 600px;
-        }
-        .bar {
-            height: 20px;
-            border-radius: 5px;
-            margin: 0 2px;
-            flex: 1;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .bar:hover {
-            transform: scale(1.1);
-        }
-        .correct {
-            background-color: #2ecc71;
-        }
-        .wrong {
-            background-color: #e74c3c;
-        }
-        .neutral {
-            background-color: #bdc3c7;
-        }
-        .question {
-            text-align: left;
-            margin: 20px 0;
-            font-size: 1.5em;
-            padding: 20px;
-            background-color: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            width: 100%;
-            max-width: 600px;
-        }
-        .answers {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-            margin-top: 10px;
-            width: 100%;
-            max-width: 600px;
-        }
-        .answer-button {
-            padding: 15px;
-            border: none;
-            border-radius: 10px;
-            background-color: #3498db;
-            color: white;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-            font-size: 1.2em;
-        }
-        .answer-button:hover {
-            background-color: #2980b9;
-            transform: scale(1.05);
-        }
-        #week-selection {
-            display: flex;
-            flex-direction: column;
-            gap: 15px; /* Khoảng cách giữa các nút */
-            align-items: center;
-            margin-top: 20px; /* Thêm khoảng cách bên trên */
-        }
-        #week-selection button {
-            padding: 15px 40px;
-            font-size: 1.2em;
-            background-color: #f39c12;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        #week-selection button:hover {
-            background-color: #e67e22;
-            transform: scale(1.05);
-        }
-        .footer {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 1em;
-            color: #7f8c8d;
-        }
-        .feedback {
-            display: none;
-            padding: 15px;
-            background-color: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            margin: 10px 0;
-            font-size: 1.1em;
-            text-align: center;
-        }
-        .action-buttons {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            gap: 20px;
-        }
-        .action-buttons button {
-            padding: 15px 30px;
-            font-size: 1.2em;
-            background-color: #27ae60;
-            color: white;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
-        }
-        .action-buttons button:hover {
-            background-color: #2ecc71;
-            transform: scale(1.05);
-        }
-        .action-buttons .home-button {
-            background-color: #e74c3c;
-        }
-        .action-buttons .home-button:hover {
-            background-color: #c0392b;
-        }
-    </style>
+	<style>
+		body {
+			font-family: 'Poppins', sans-serif;
+			background: linear-gradient(to right, #74ebd5, #9face6);
+			margin: 0;
+			padding: 20px;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			color: #34495e;
+		}
+
+		h1 {
+			text-align: center;
+			color: #fff;
+			margin-bottom: 20px;
+			text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+			font-size: 2.5em;
+		}
+
+		#progress-bar {
+			display: flex;
+			justify-content: center;
+			margin: 20px 0;
+			width: 100%;
+			max-width: 600px;
+		}
+
+		.bar {
+			height: 20px;
+			border-radius: 5px;
+			margin: 0 2px;
+			flex: 1;
+			transition: background-color 0.3s, transform 0.2s;
+		}
+
+		.bar:hover {
+			transform: scale(1.1);
+		}
+
+		.correct {
+			background-color: #2ecc71;
+		}
+
+		.wrong {
+			background-color: #e74c3c;
+		}
+
+		.neutral {
+			background-color: #bdc3c7;
+		}
+
+		.question {
+			text-align: left;
+			margin: 20px 0;
+			font-size: 1.5em;
+			padding: 20px;
+			background-color: #ffffff;
+			border-radius: 10px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			width: 100%;
+			max-width: 600px;
+		}
+
+		.answers {
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 10px;
+			margin-top: 10px;
+			width: 100%;
+			max-width: 600px;
+		}
+
+		.answer-button {
+			padding: 15px;
+			border: none;
+			border-radius: 10px;
+			background-color: #3498db;
+			color: white;
+			cursor: pointer;
+			transition: background-color 0.3s, transform 0.2s;
+			font-size: 1.2em;
+		}
+
+		.answer-button:hover {
+			background-color: #2980b9;
+			transform: scale(1.05);
+		}
+
+		#week-selection {
+			display: flex;
+			flex-direction: column;
+			gap: 15px; /* Khoảng cách giữa các nút */
+			align-items: center;
+			margin-top: 20px; /* Thêm khoảng cách bên trên */
+		}
+
+		#week-selection button {
+			padding: 15px 40px;
+			font-size: 1.2em;
+			background-color: #f39c12;
+			color: white;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			transition: background-color 0.3s, transform 0.2s;
+		}
+
+		#week-selection button:hover {
+			background-color: #e67e22;
+			transform: scale(1.05);
+		}
+
+		.footer {
+			text-align: center;
+			margin-top: 20px;
+			font-size: 1em;
+			color: #7f8c8d;
+		}
+
+		.feedback {
+			display: none;
+			padding: 15px;
+			background-color: rgba(255, 255, 255, 0.9);
+			border-radius: 10px;
+			box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+			margin: 10px 0;
+			font-size: 1.1em;
+			text-align: center;
+		}
+
+		.action-buttons {
+			display: flex;
+			justify-content: space-around;
+			margin-top: 20px;
+			gap: 20px;
+		}
+
+		.action-buttons button {
+			padding: 15px 30px;
+			font-size: 1.2em;
+			background-color: #27ae60;
+			color: white;
+			border: none;
+			border-radius: 10px;
+			cursor: pointer;
+			transition: background-color 0.3s, transform 0.2s;
+		}
+
+		.action-buttons button:hover {
+			background-color: #2ecc71;
+			transform: scale(1.05);
+		}
+
+		.action-buttons .home-button {
+			background-color: #e74c3c;
+		}
+
+		.action-buttons .home-button:hover {
+			background-color: #c0392b;
+		}
+
+		/* Responsive styles */
+		@media (max-width: 768px) {
+			h1 {
+				font-size: 2em;
+			}
+
+			.question {
+				font-size: 1.2em;
+			}
+
+			.answer-button {
+				font-size: 1em;
+				padding: 10px;
+			}
+
+			#week-selection button {
+				font-size: 1em;
+				padding: 10px 20px;
+			}
+
+			.footer {
+				font-size: 0.9em;
+			}
+		}
+	</style>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-app.js";
         import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.1/firebase-database.js";
@@ -264,16 +311,33 @@
         }
 
         function checkAnswer(selectedAnswer) {
-            const correctAnswer = questions[currentQuestionIndex].vietnamese;
-            if (selectedAnswer === correctAnswer) {
-                correctAnswers++;
-            }
+			const correctAnswer = questions[currentQuestionIndex].vietnamese;
+			const answerButtons = document.querySelectorAll(".answer-button");
+			
+			// Disable all buttons to prevent multiple clicks
+			answerButtons.forEach(button => button.disabled = true);
 
-            currentQuestionIndex++;
-            updateProgressBar();
+			const feedbackElement = document.getElementById("feedback");
 
-            setTimeout(displayQuestion, 1000); // Delay before moving to next question
-        }
+			if (selectedAnswer === correctAnswer) {
+				correctAnswers++;
+				feedbackElement.textContent = "Correct!";
+				feedbackElement.style.backgroundColor = "#2ecc71";
+			} else {
+				feedbackElement.textContent = `Wrong! The correct answer was "${correctAnswer}"`;
+				feedbackElement.style.backgroundColor = "#e74c3c";
+			}
+
+			feedbackElement.style.display = "block";
+
+			// Wait for 1 second, then move to the next question
+			setTimeout(() => {
+				feedbackElement.style.display = "none";
+				currentQuestionIndex++;
+				updateProgressBar();
+				displayQuestion();
+			}, 1000);
+		}
 
         function updateProgressBar() {
             const progressBar = document.getElementById("progress-bar");
@@ -322,8 +386,7 @@
             homeButton.textContent = "Home";
             homeButton.className = "home-button";
             homeButton.onclick = () => {
-                document.getElementById("test-container").style.display = "none";
-                document.getElementById("week-selection").style.display = "block";
+                location.reload();
             };
 
             actionButtons.appendChild(retryButton);
